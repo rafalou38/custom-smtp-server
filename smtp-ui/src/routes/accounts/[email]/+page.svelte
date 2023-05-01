@@ -4,17 +4,24 @@
 	import Icon from '@iconify/svelte';
 	import type { PageData } from './$types';
 	import type { ParsedMail } from 'mailparser';
+	import { flip } from 'svelte/animate';
+	import { slide } from 'svelte/transition';
 
 	export let data: PageData;
 
 	let selected: ParsedMail | null = data.emails[0];
-	let selectedEmails: Set<string> = new Set();
+	let search = '';
 
 	const id = (email: ParsedMail) =>
 		email.messageId || email.date?.getTime().toString() || JSON.stringify(email);
 
 	$: if (selected && !$readEmails.includes(id(selected)))
 		$readEmails = [...$readEmails, id(selected)];
+
+	let filtered: ParsedMail[] = [];
+	$: filtered = data.emails.filter(
+		(e) => e.subject?.includes(search) || e.text?.includes(search) || e.from?.text?.includes(search)
+	);
 
 	const mode = 'HTML';
 </script>
@@ -23,13 +30,13 @@
 	<ul class="w-64">
 		<li class="border-b-slate-800 flex border-b">
 			<input
+				bind:value={search}
 				type="text"
 				class="grow bg-slate-800 border-slate-700 focus:ring-transparent focus:outline-none placeholder:text-slate-500 shadow-slate-800 box-border p-1 m-2 text-sm text-white border rounded-sm shadow-sm"
 			/>
 		</li>
-		{#each data.emails as email}
-			<!-- content here -->
-			<li class="flex items-stretch">
+		{#each filtered as email (id(email))}
+			<li class="flex items-stretch" animate:flip transition:slide>
 				<button
 					class="checkox place-items-center border-b-slate-800 grid font-bold border-b"
 					on:click={() => {}}
