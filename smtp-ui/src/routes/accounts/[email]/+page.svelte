@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { readEmails } from '$lib/stores/emails';
 	import { toRelativeTime } from '$lib/utils/time';
+	import Icon from '@iconify/svelte';
 	import type { PageData } from './$types';
 	import type { ParsedMail } from 'mailparser';
 
@@ -21,21 +22,6 @@
 <div class="flex items-stretch h-screen">
 	<ul class="w-64">
 		<li class="border-b-slate-800 flex border-b">
-			<button
-				class="checkox border-b-transparent font-bold"
-				on:click={() => {
-					if (selectedEmails.size == data.emails.length) {
-						selectedEmails.clear();
-					} else {
-						data.emails.forEach((e) => selectedEmails.add(id(e)));
-					}
-					selectedEmails = selectedEmails;
-				}}
-			>
-				{#if selectedEmails.size == data.emails.length}
-					+
-				{/if}
-			</button>
 			<input
 				type="text"
 				class="grow bg-slate-800 border-slate-700 focus:ring-transparent focus:outline-none placeholder:text-slate-500 shadow-slate-800 box-border p-1 m-2 text-sm text-white border rounded-sm shadow-sm"
@@ -45,17 +31,10 @@
 			<!-- content here -->
 			<li class="flex items-stretch">
 				<button
-					class="checkox border-b-slate-800 font-bold border-b"
-					on:click={() => {
-						selectedEmails.has(id(email))
-							? selectedEmails.delete(id(email))
-							: selectedEmails.add(id(email));
-						selectedEmails = selectedEmails;
-					}}
+					class="checkox place-items-center border-b-slate-800 grid font-bold border-b"
+					on:click={() => {}}
 				>
-					{#if selectedEmails.has(id(email))}
-						+
-					{/if}
+					<Icon icon="mdi:trash-can-outline" />
 				</button>
 				<button
 					class="item"
