@@ -2,7 +2,7 @@
 const nodemailer = require("nodemailer");
 
 const IP = "172.23.89.237"
-const PORT = 8080
+const PORT = 25
 
 async function main() {
     // create reusable transporter object using the default SMTP transport
@@ -16,7 +16,7 @@ async function main() {
     // send mail with defined transport object
     let info = await transporter.sendMail({
         from: '"Fred Foo 👻" <foo@example.com>', // sender address
-        to: "bar@example.com", // list of receivers
+        to: "jeanmi@rf38.ddns.net", // list of receivers
         subject: "Hello ✔", // Subject line
         text: "Yoo it's a me !", // plain text body
     });

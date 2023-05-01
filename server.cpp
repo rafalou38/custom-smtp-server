@@ -14,7 +14,7 @@
 using namespace std;
 
 #define BUFFER_SIZE 1024 * 10
-#define PORT 8080
+#define PORT 25
 int server_fd;
 
 void cleanup(int signum)
@@ -26,22 +26,16 @@ void cleanup(int signum)
 }
 string getHeaderFieldValue(const string &emailData, const string &headerFieldName)
 {
-    // Regular expression pattern to match the header field
-    string pattern = "(" + headerFieldName + ":\\s*)([^\\r\\n]+)";
-    regex headerFieldPattern(pattern);
+    regex regex("^" + headerFieldName + ":\\s*<([^>]+)>$", regex_constants::multiline | regex_constants::icase);
     smatch match;
-
-    // Search for the header field in the email data
-    if (regex_search(emailData, match, headerFieldPattern))
+    if (regex_search(emailData, match, regex))
     {
-        // Extract the value of the header field
-        if (match.size() == 3)
+        if (match.size() == 2)
         {
-            return match[2].str();
+            return match[1].str();
         }
     }
 
-    // Return an empty string if the header field is not found
     return "";
 }
 void handle_connection(int socket)
