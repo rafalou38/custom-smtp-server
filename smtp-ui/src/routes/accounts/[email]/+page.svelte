@@ -68,7 +68,10 @@
 			<div class="bg-slate-900 shrink-0 grow-0 p-4 text-white">
 				<div class="flex justify-between">
 					<p><span class="text-slate-500">De:</span> {selected.from?.text}</p>
-					<p><span class="text-slate-500">Pour:</span> {selected.to.text || selected.to[0].text}</p>
+					<p>
+						<span class="text-slate-500">Pour:</span>
+						{selected.to?.text || selected.to[0]?.text}
+					</p>
 				</div>
 				<p><span class="text-slate-500">Sujet:</span> {selected.subject}</p>
 			</div>

@@ -1,7 +1,7 @@
 "use strict";
 const nodemailer = require("nodemailer");
 
-const IP = "172.23.89.237"
+const IP = "172.28.188.84"
 const PORT = 25
 
 async function main() {
@@ -18,7 +18,8 @@ async function main() {
         from: '"Fred Foo 👻" <foo@example.com>', // sender address
         to: "jeanmi@rf38.ddns.net", // list of receivers
         subject: "Hello ✔", // Subject line
-        text: "Yoo it's a me !", // plain text body
+        text: "Plaintext version of the message",
+        html: "<p>HTML version of the message</p>"
     });
 
     console.log("Message sent: %s", info.messageId);
