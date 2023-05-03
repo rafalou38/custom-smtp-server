@@ -9,7 +9,6 @@
 #include <unistd.h>
 #include <signal.h>
 #include <string>
-#include <regex>
 
 using namespace std;
 
@@ -26,22 +25,95 @@ void cleanup(int signum)
 }
 string getHeaderFieldValue(const string &emailData, const string &headerFieldName)
 {
-    regex regex("^" + headerFieldName + ":\\s*<([^>]+)>$", regex_constants::multiline | regex_constants::icase);
-    smatch match;
-    if (regex_search(emailData, match, regex))
+    string headerStart = headerFieldName + ": ";
+    char *dataPtr   = (char*)emailData.c_str();
+    char *headerPtr = (char*)headerStart.c_str();
+
+    bool lineStart  = false;
+    bool matched    = false;
+    bool matching   = false;
+
+    string value;
+    while (*dataPtr != 0)
     {
-        if (match.size() == 2)
+        if(*dataPtr != '\r'){
+            if(matched){
+                if(*dataPtr == '\n'){
+                    break;
+                }else{
+                    value.push_back(*dataPtr);
+                }
+            }
+            if((matching || lineStart) && tolower(*dataPtr) == tolower(*headerPtr)){
+                matching = true;
+                headerPtr++;
+            }else{
+                matching = true;
+                headerPtr = (char*)headerStart.c_str();
+            }
+            if(*headerPtr == 0){
+                matched = true;
+            }
+
+            if(*dataPtr == '\n'){
+                // Double newline == 
+                if(lineStart) break;
+                lineStart = true;
+            }else{
+                lineStart = false;
+            }
+        }
+        dataPtr++;
+    }
+
+    return value;
+}
+
+// int main(){
+//     string data= "O:<bar@example.com>\r\n\r\nContent-Type: multipart/alternative;\r\n boundary=\"--_NmP-7bd80925b63b9578-Part_1\"\r\n From: =?UTF-8?Q?Fred_Foo_=F0=9F=91=BB?= <foo@example.com>\r\nTo: bar@example.com\r\nSubject: =?UTF-8?Q?Hello_=E2=9C=94?=\r\nMessage-ID: <136f1662-99ec-eedb-7e4d-911c6e775bc4@example.com>\r\nDate: Tue, 25 Apr 2023 19:36:52 +0000\r\nMIME-Version: 1.0\r\n\r\n----_NmP-7bd80925b63b9578-Part_1\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nHello world?\r\n----_NmP-7bd80925b63b9578-Part_1\r\nContent-Type: text/html; charset=utf-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\n<b>Hello world?</b>\r\n----_NmP-7bd80925b63b9578-Part_1--";
+//     string hea = "from";
+
+//     string val = getHeaderFieldValue(data, hea);
+
+//     cout << val << endl;
+
+//     return 0;
+// }
+
+std::string strip(std::string &str)
+{
+    if  (str.length() != 0)
+    {
+        auto w = std::string(" ") ;
+        auto n = std::string("\n") ;
+        auto r = std::string("\t") ;
+        auto t = std::string("\r") ;
+        auto v = std::string(1 ,str.front()); 
+        while((v == w) || (v==t) || (v==r) || (v==n))
         {
-            return match[1].str();
+            str.erase(str.begin());
+            v = std::string(1 ,str.front());
+        }
+        v = std::string(1 , str.back()); 
+        while((v ==w) || (v==t) || (v==r) || (v==n))
+        {
+            str.erase(str.end() - 1 );
+            v = std::string(1 , str.back());
         }
     }
 
-    return "";
+    return str;
 }
+
 void handle_connection(int socket)
 {
     cout << endl
          << ">> Incoming connection " << socket << endl;
+
+    ofstream log;
+    log.open("./con.log");
+
+
 
     string message = "220 smtp.example.com SMTP Ready\r\n";
     send(socket, message.c_str(), message.length(), 0);
@@ -58,13 +130,14 @@ void handle_connection(int socket)
     while (read(socket, buffer, BUFFER_SIZE) > 0)
     {
         line = string(buffer);
+        log << line;
     process:
         if (readingDATA)
         {
             size_t index = line.rfind("\r\n.\r\n");
             if (index != string::npos)
             {
-                cout << "> End data: " << data.length() << endl;
+                cout << "- Received " << data.length() << " chars of body." << endl;
                 readingDATA = false;
                 message = "250 Ok\r\n";
                 send(socket, message.c_str(), message.length(), 0);
@@ -79,14 +152,15 @@ void handle_connection(int socket)
         {
             if (line.rfind("HELO") == 0 || line.rfind("EHLO") == 0)
             {
-                cout << "> Receive Hello" << endl;
+                // cout << "> Receive Hello" << endl;
                 message = "250 Ok\r\n";
                 send(socket, message.c_str(), message.length(), 0);
             }
             else if (line.rfind("MAIL FROM:") == 0)
             {
                 sender = line.substr(10);
-                cout << "> Receive Sender: " << sender << endl;
+                sender = strip(sender);
+                cout << "- Sender: " << sender << endl;
 
                 message = "250 Ok\r\n";
                 send(socket, message.c_str(), message.length(), 0);
@@ -94,14 +168,15 @@ void handle_connection(int socket)
             else if (line.rfind("RCPT TO:") == 0)
             {
                 target = line.substr(8);
-                cout << "> Receive Target: " << target << endl;
+                target = strip(target);
+                cout << "- Target: " << target << endl;
 
                 message = "250 Ok\r\n";
                 send(socket, message.c_str(), message.length(), 0);
             }
             else if (line.rfind("DATA") == 0)
             {
-                cout << "> Start data: " << endl;
+                cout << "- Begin Data..." << endl;
                 message = "354  Ready\r\n";
                 send(socket, message.c_str(), message.length(), 0);
                 line = line.substr(4 + 2);
@@ -111,7 +186,6 @@ void handle_connection(int socket)
             }
             else if (line.rfind("QUIT") == 0)
             {
-                cout << "> Bye: " << endl;
                 message = "221 Bye\r\n";
                 send(socket, message.c_str(), message.length(), 0);
                 break;
@@ -119,20 +193,21 @@ void handle_connection(int socket)
             else
             {
                 cout << "Not recognized: "
-                     << "\x1B[32m" << line << "\x1B[0m" << endl;
+                     << "\x1B[32m" << strip(line) << "\x1B[0m" << endl;
             }
         }
     }
 
-    string date = getHeaderFieldValue(data, "Date");
-    string to = getHeaderFieldValue(data, "To");
+    string date = getHeaderFieldValue(data, "date");
+    string to = getHeaderFieldValue(data, "to");
     ofstream myfile;
     string path = "./messages/";
     mkdir(path.c_str(), 0777);
     if (date.length() == 0 || to.length() == 0)
     {
-        cerr << "Invalid Email";
-        path += rand() + ".txt";
+        path += "unknown/";
+        mkdir(path.c_str(), 0777);
+        path += to_string(rand()) + ".txt";
     }
     else
     {
@@ -143,13 +218,13 @@ void handle_connection(int socket)
 
     myfile.open(path);
     myfile << data;
+    log.close();
     myfile.close();
 
-    cout << ">>> Wrote email to " << path << endl;
+    cout << "Wrote email to " << path << endl;
 
     close(socket);
-    cout << endl
-         << "<< Closed connection " << socket << endl;
+    cout << "Closed connection " << socket << endl;
 }
 
 int main(int argc, char const *argv[])
