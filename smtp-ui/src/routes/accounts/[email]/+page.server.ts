@@ -6,15 +6,11 @@ const BASE_MAIL = "C:/Users/Rafael/Desktop/Code/low-level/smtp/messages"
 
 /** @type {import('./$types').PageLoad} */
 export async function load({ params }) {
-
-    if (!params.email.match(/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/)) return {
+    if (params.email != "unknown" && !params.email.match(/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/)) return {
         emails: []
     }
 
     const emails: ParsedMail[] = [];
-
-    console.log(params.email);
-
 
     const emailDates = await readdir(BASE_MAIL + "/" + params.email);
     for (const fileName of emailDates) {

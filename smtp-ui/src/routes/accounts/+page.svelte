@@ -6,8 +6,6 @@
 	import { toRelativeTime } from '$lib/utils/time';
 
 	export let data: PageData;
-	console.log(data);
-
 	const targetDate = new Date();
 
 	let filter = '';
@@ -18,7 +16,7 @@
 		type="text"
 		placeholder="Search an email"
 		bind:value={filter}
-		class="bg-slate-800 border rounded-sm border-slate-700 p-2 m-2 box-border text-white focus:ring-transparent focus:outline-none placeholder:text-slate-500 shadow-sm shadow-slate-800"
+		class="bg-slate-800 border-slate-700 focus:ring-transparent focus:outline-none placeholder:text-slate-500 shadow-slate-800 box-border p-2 m-2 text-white border rounded-sm shadow-sm"
 	/>
 	<ul>
 		{#each data.accounts as account (account.address)}
@@ -31,11 +29,11 @@
 				{#if account.address.includes(filter)}
 					<a href="/accounts/{account.address}" class="item flex gap-2">
 						<button
-							class="aspect-square w-6 h-6 flex justify-center items-center hover:bg-slate-700 border border-transparent hover:border-slate-600 rounded"
+							class="aspect-square hover:bg-slate-700 hover:border-slate-600 flex items-center justify-center w-6 h-6 border border-transparent rounded"
 						>
 							<Icon icon="material-symbols:block" />
 						</button>
-						<div class="item flex justify-between grow">
+						<div class="item grow flex justify-between">
 							{account.address}
 							<div class="">
 								{toRelativeTime(nearestDate.date)}

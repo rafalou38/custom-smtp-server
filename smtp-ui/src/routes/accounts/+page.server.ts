@@ -15,13 +15,16 @@ export async function load() {
     const accountsEmails = await readdir(BASE_MAIL);
     for (const addr of accountsEmails) {
         const emails = await readdir(BASE_MAIL + "/" + addr);
-
         accounts.push({
             address: addr,
-            emails: emails.map(e => ({
-                id: e,
-                date: new Date(e.split(".")[0]?.replaceAll("\uf03a", ":"))
-            })),
+            emails: emails.map(e => {
+                let date = new Date(e.split(".")[0]?.replaceAll("\uf03a", ":"));
+                if (isNaN(date as unknown as number)) date = new Date();
+                return {
+                    id: e,
+                    date
+                }
+            }),
         })
     }
 

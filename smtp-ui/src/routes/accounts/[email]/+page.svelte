@@ -36,7 +36,7 @@
 			/>
 		</li>
 		{#each filtered as email (id(email))}
-			<li class="flex items-stretch" animate:flip transition:slide>
+			<li class="flex items-stretch" animate:flip transition:slide|local>
 				<button
 					class="checkox place-items-center border-b-slate-800 grid font-bold border-b"
 					on:click={() => {}}
