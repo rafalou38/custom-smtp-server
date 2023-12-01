@@ -9,6 +9,7 @@
 	import PostalMime, { type Email } from 'postal-mime';
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
+	import { bubble } from 'svelte/internal';
 
 	export let data: PageData;
 
@@ -32,31 +33,34 @@
 			let parser = new PostalMime();
 			let result = await parser.parse(email);
 			emails = [...emails, result];
-			console.log(result);
 		}
+		selected = emails[0];
 	});
 
-	const mode = 'HTML';
+	let mode = 'HTML';
 </script>
 
 <div class="flex items-stretch h-screen">
 	<ul class="w-64">
-		<li class="border-b-slate-800 flex border-b">
-			<a href="/accounts" class="border-b-slate-800 flex items-center justify-center w-full p-4 text-3xl text-white border-b">
-				<Icon icon="mdi:home-outline" />
+		<li class="border-b-zinc-200 flex border-b">
+			<a
+				href="/accounts"
+				class="border-b-zinc-200 flex items-center justify-center w-full p-4 text-3xl text-black border-b"
+			>
+				<Icon icon="mdi:home" />
 			</a>
 		</li>
-		<li class="border-b-slate-800 flex border-b">
+		<li class="border-b-zinc-200 flex border-b">
 			<input
 				bind:value={search}
 				type="text"
-				class="grow bg-slate-800 border-slate-700 focus:ring-transparent focus:outline-none placeholder:text-slate-500 shadow-slate-800 box-border p-1 m-2 text-sm text-white border rounded-sm shadow-sm"
+				class="grow bg-zinc-200 border-zinc-300 focus:ring-transparent focus:outline-none placeholder:text-zinc-500 shadow-zinc-200 box-border p-1 m-2 text-sm text-black border rounded-sm shadow-sm"
 			/>
 		</li>
 		{#each filtered as email (id(email))}
 			<li class="flex items-stretch" animate:flip transition:slide|local>
 				<button
-					class="checkox place-items-center border-b-slate-800 grid font-bold border-b"
+					class="checkox place-items-center border-b-zinc-200 grid font-bold border-b"
 					on:click={() => {}}
 				>
 					<Icon icon="mdi:trash-can-outline" />
@@ -67,7 +71,7 @@
 					class:font-bold={email.date && !$readEmails.includes(id(email))}
 				>
 					<!-- {#if email.date && !$readEmails.includes(email.date.getTime())}
-						<span class="bg-slate-300 inline-block w-2 h-2 rounded-full" />
+						<span class="bg-zinc-700 inline-block w-2 h-2 rounded-full" />
 					{/if} -->
 					<div class="flex items-center justify-between">
 						<span>{email.subject}</span>
@@ -81,32 +85,39 @@
 		{/each}
 	</ul>
 
-	<div class="grow bg-slate-800 border-slate-700 flex flex-col">
+	<div class="grow bg-zinc-200 border-zinc-300 flex flex-col">
 		{#if selected}
-			<div class="bg-slate-900 shrink-0 grow-0 p-4 text-white">
+			<div class="bg-zinc-100 shrink-0 grow-0 relative p-4 text-black">
 				<div class="flex justify-between">
 					<p>
-						<span class="text-slate-500">De:</span>
+						<span class="text-zinc-500">De:</span>
 						{selected.from.name} ({selected.from.address})
 					</p>
 					<p>
-						<span class="text-slate-500">Pour:</span>
+						<span class="text-zinc-500">Pour:</span>
 						{selected.to[0].name} ({selected.to[0].address})
 					</p>
 				</div>
-				<p><span class="text-slate-500">Sujet:</span> {selected.subject}</p>
+				<p><span class="text-zinc-500">Sujet:</span> {selected.subject}</p>
+				<button
+					class="bg-zinc-300 right-1 bottom-1 absolute flex items-center justify-center gap-2 p-2 rounded-full"
+					on:click={() => (mode = mode == 'HTML' ? 'TEXT' : 'HTML')}><Icon icon="mdi:format-text" /></button
+				>
 			</div>
-			{#if mode == 'HTML'}
+			{#if mode == 'HTML' && selected.html}
 				<main class="grow">
 					<iframe
-						class="invert w-full h-full"
+						class="border-zinc-300 w-full h-full p-2 bg-white border-2"
 						title="email preview"
-						srcdoc={selected.html || selected.text}
+						srcdoc={selected.html}
 						frameborder="0"
 					/>
 				</main>
 			{:else}
-				<iframe title="email preview" srcdoc={selected.text} frameborder="0" />
+				<!-- <iframe title="email preview" srcdoc={selected.text} frameborder="0" /> -->
+				<pre class="border-zinc-300 w-full h-full p-2 overflow-scroll whitespace-pre-wrap bg-white border-2">
+					{selected.text?.trim().replaceAll(/\n+/g, '\n\n')}
+					</pre>
 				<!-- else content here -->
 			{/if}
 		{/if}
@@ -119,23 +130,23 @@
 		box-shadow: inset 0 0 2px 1px #475569;
 	}
 	.item {
-		@apply w-full p-2 border border-transparent border-b-slate-800 text-slate-400 cursor-pointer ease-out  transition-all;
+		@apply w-full p-2 border border-transparent border-b-zinc-200 text-zinc-600 cursor-pointer ease-out  transition-all;
 	}
 	.checkox {
 		border-top: transparent;
 		border-left: transparent;
-		@apply grow-0 shrink-0 w-8 border-r border-r-slate-800 text-slate-400 cursor-pointer ease-out  transition-all;
+		@apply grow-0 shrink-0 w-8 border-r border-r-zinc-200 text-zinc-600 cursor-pointer ease-out  transition-all;
 	}
 	/* .parsedMail {
-		background: theme(backgroundColor.slate.400) !important;
+		background: theme(backgroundColor.zinc.400) !important;
 	} */
 
 	.checkox:hover {
-		background: theme(backgroundColor.slate.800);
-		border: 1px solid theme(borderColor.slate.700);
+		background: theme(backgroundColor.zinc.200);
+		border: 1px solid theme(borderColor.zinc.300);
 	}
 	.item:hover {
-		background: theme(backgroundColor.slate.800);
-		border: 1px solid theme(borderColor.slate.700);
+		background: theme(backgroundColor.zinc.200);
+		border: 1px solid theme(borderColor.zinc.300);
 	}
 </style>
