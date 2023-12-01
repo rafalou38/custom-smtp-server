@@ -150,7 +150,7 @@ void handle_connection(int socket)
         }
         else
         {
-            if (line.rfind("HELO") == 0 || line.rfind("EHLO") == 0)
+            if ((line).rfind("HELO") == 0 || line.rfind("EHLO") == 0)
             {
                 // cout << "> Receive Hello" << endl;
                 message = "250 Ok\r\n";

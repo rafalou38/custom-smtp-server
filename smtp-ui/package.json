@@ -27,7 +27,7 @@
 		"eslint-config-prettier": "^8.5.0",
 		"eslint-plugin-svelte": "^2.26.0",
 		"libmime": "^5.2.1",
-		"postal-mime": "^1.0.16",
+		"postal-mime": "^2.0.1",
 		"postcss": "^8.4.23",
 		"prettier": "^2.8.0",
 		"prettier-plugin-svelte": "^2.8.1",

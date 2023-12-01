@@ -1714,10 +1714,10 @@ pirates@^4.0.1:
   resolved "https://registry.yarnpkg.com/pirates/-/pirates-4.0.5.tgz#feec352ea5c3268fb23a37c702ab1699f35a5f3b"
   integrity sha512-8V9+HQPupnaXMA23c5hvl69zXvTwTzyAYasnkb0Tts4XvO4CliqONMOnvlq26rkhLC3nWDFBJf73LU1e1VZLaQ==
 
-postal-mime@^1.0.16:
-  version "1.0.16"
-  resolved "https://registry.yarnpkg.com/postal-mime/-/postal-mime-1.0.16.tgz#dbc7fecb6f8544d3968706810665c9bde35fec3d"
-  integrity sha512-DIpZ6HfV8GIGerAOui+Q3YEE9EZNK3sdZdH2yGVhbVsB7F6bbD3L4D+W2wch7aV+aOkY5EMjMuKYbRDQGdSQBA==
+postal-mime@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/postal-mime/-/postal-mime-2.0.1.tgz#51b4f13f1b0120e46abba3e73a0a18e9041459e0"
+  integrity sha512-ZsPbRsHlMv6ODJ99hCCZJf6BX0b3zZMX3Ydun8xPOKtkeDieaTxH6aPx6o3tkOYausufWiXPa/npdSuQjWsLwA==
 
 postcss-import@^15.1.0:
   version "15.1.0"

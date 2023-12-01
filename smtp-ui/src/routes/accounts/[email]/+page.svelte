@@ -3,31 +3,49 @@
 	import { toRelativeTime } from '$lib/utils/time';
 	import Icon from '@iconify/svelte';
 	import type { PageData } from './$types';
-	import type { ParsedMail } from 'mailparser';
 	import { flip } from 'svelte/animate';
 	import { slide } from 'svelte/transition';
+	// import { simpleParser, type Email } from "mailparser";
+	import PostalMime, { type Email } from 'postal-mime';
+	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
 
 	export let data: PageData;
 
-	let selected: ParsedMail | null = data.emails[0];
+	let selected: Email | null = null;
+	let emails: Email[] = [];
 	let search = '';
 
-	const id = (email: ParsedMail) =>
-		email.messageId || email.date?.getTime().toString() || JSON.stringify(email);
+	const id = (email: Email) => email.messageId || email.date || JSON.stringify(email);
 
 	$: if (selected && !$readEmails.includes(id(selected)))
 		$readEmails = [...$readEmails, id(selected)];
 
-	let filtered: ParsedMail[] = [];
-	$: filtered = data.emails.filter(
-		(e) => e.subject?.includes(search) || e.text?.includes(search) || e.from?.text?.includes(search)
+	let filtered: Email[] = [];
+	$: filtered = emails.filter(
+		(e) => e.subject?.includes(search) || e.text?.includes(search) || e.from?.name?.includes(search)
 	);
+
+	onMount(async () => {
+		if (!browser) return;
+		for (const email of data.emails) {
+			let parser = new PostalMime();
+			let result = await parser.parse(email);
+			emails = [...emails, result];
+			console.log(result);
+		}
+	});
 
 	const mode = 'HTML';
 </script>
 
 <div class="flex items-stretch h-screen">
 	<ul class="w-64">
+		<li class="border-b-slate-800 flex border-b">
+			<a href="/accounts" class="border-b-slate-800 flex items-center justify-center w-full p-4 text-3xl text-white border-b">
+				<Icon icon="mdi:home-outline" />
+			</a>
+		</li>
 		<li class="border-b-slate-800 flex border-b">
 			<input
 				bind:value={search}
@@ -54,10 +72,10 @@
 					<div class="flex items-center justify-between">
 						<span>{email.subject}</span>
 						{#if email.date}
-							<span>({toRelativeTime(email.date)})</span>
+							<span>({toRelativeTime(new Date(email.date))})</span>
 						{/if}
 					</div>
-					<span class="text-xs">{email.from?.text}</span>
+					<span class="text-xs">{email.from?.name}</span>
 				</button>
 			</li>
 		{/each}
@@ -67,10 +85,13 @@
 		{#if selected}
 			<div class="bg-slate-900 shrink-0 grow-0 p-4 text-white">
 				<div class="flex justify-between">
-					<p><span class="text-slate-500">De:</span> {selected.from?.text}</p>
+					<p>
+						<span class="text-slate-500">De:</span>
+						{selected.from.name} ({selected.from.address})
+					</p>
 					<p>
 						<span class="text-slate-500">Pour:</span>
-						{selected.to?.text || selected.to[0]?.text}
+						{selected.to[0].name} ({selected.to[0].address})
 					</p>
 				</div>
 				<p><span class="text-slate-500">Sujet:</span> {selected.subject}</p>
@@ -80,7 +101,7 @@
 					<iframe
 						class="invert w-full h-full"
 						title="email preview"
-						srcdoc={selected.html || selected.textAsHtml || selected.text}
+						srcdoc={selected.html || selected.text}
 						frameborder="0"
 					/>
 				</main>
@@ -105,7 +126,7 @@
 		border-left: transparent;
 		@apply grow-0 shrink-0 w-8 border-r border-r-slate-800 text-slate-400 cursor-pointer ease-out  transition-all;
 	}
-	/* .selected {
+	/* .parsedMail {
 		background: theme(backgroundColor.slate.400) !important;
 	} */
 

@@ -1,6 +1,4 @@
 import { readFile, readdir } from "node:fs/promises";
-import { simpleParser, type ParsedMail } from "mailparser";
-
 
 const BASE_MAIL = "C:/Users/Rafael/Desktop/Code/low-level/smtp/messages"
 
@@ -10,7 +8,7 @@ export async function load({ params }) {
         emails: []
     }
 
-    const emails: ParsedMail[] = [];
+    const emails: string[] = [];
 
     const emailDates = await readdir(BASE_MAIL + "/" + params.email);
     for (const fileName of emailDates) {
@@ -18,10 +16,11 @@ export async function load({ params }) {
         let raw = emailBuffer.toString("utf8");
         raw = raw.replace(/(?<=O:.+)\r?\n\r?\n/gm, "\n");
 
-        const parsed = await simpleParser(raw, {});
+        // const parsed = await simpleParser(raw, {});
 
-        emails.push(parsed)
+        emails.push(raw)
     }
+    // console.log(emails[0].attachments[0])
 
     return {
         emails
